@@ -19,7 +19,8 @@ public class CandiadateReducer extends Reducer<Text, Text, Text, NullWritable> {
 
         String  k = key.toString();
         List<Path> paths = new ArrayList<>();
-       // context.write(key,NullWritable.get());
+
+
         for(Text text : values){
             paths.add(new Path(text.toString()));
         }
@@ -27,21 +28,34 @@ public class CandiadateReducer extends Reducer<Text, Text, Text, NullWritable> {
         List<Path> tail = new ArrayList<>();
         for(Path p : paths){
             if(p.getHead().equals(k))
-                head.add(p);
-            else
-                tail.add(p);
+                head.add(new Path(p.toString()));
+            if(p.getTail().equals(k))
+                tail.add(new Path(p.toString()));
         }
 
+//        for(int i = 0; i < tail.size(); i++){
+//
+//            Path  p = tail.get(i);
+//
+//            for(int j = 0; j < head.size(); j++){
+//
+//                Path pa = new Path(p.toString());
+//                p.add(head.get(j).getPathList().get(1));
+//                context.write(new Text(p.toString()), NullWritable.get());
+//            }
+//
+//        }
         for(Path p : tail){
 
             for(Path p1 : head){
 
-                p.add(p1.getPathList().get(2));
-                context.write(new Text(p.toString()), NullWritable.get());
+               Path pa = new Path(p.toString());
+                pa.add(p1.getPathList().get(1));
+                context.write(new Text(pa.toString()), NullWritable.get());
             }
         }
 
-     //   context.write(key, NullWritable.get());
+       // context.write(key, NullWritable.get());
 
 
     }

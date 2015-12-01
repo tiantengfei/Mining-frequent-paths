@@ -82,8 +82,7 @@ public class Test {
         }
 
 
-        Path p = new Path("www.made-in-china.com/products-search/hot-china-products/Interphone.html~www.made-in-china.com/products-search/find-china-products/0b0nolimit/Interphone-2.html~www.made-in-china.com/productdirectory.do?action=hunt&code=1455000000&code4BrowerHistory=EEnxEJQbMJmm&order=0&style=b&page=1&memberLevel=&asFlag=&comProvince=nolimit&propertyValues=&from=hunt&word=Interphone&mode=and&comName=&comCode=&subCode=&size=30&viewType=1&toTradeMarkets=&hotflag=0&viewMoreOrLessClass=viewMore&includePartSearch=true&isProdCom=&newFlag=false&sgsBaseFlag=&catOhter=&sgsMembershipFlag=&sizeHasChanged=0&minNumOrder=&comCity=nolimit~www.made-in-china." +
-                "com/products-search/find-Interphone-Pager/0b0nolimit/Interphone-2.html");
+        Path p = new Path("www.made-in-china.com/~www.made-in-china.com/ 1");
         System.out.println(p.toString());
         System.out.println("flag:" + p.getFlag());
         System.out.println("head:" + p.getTail());

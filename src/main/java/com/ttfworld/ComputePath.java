@@ -26,40 +26,57 @@ public class ComputePath  extends Configured implements Tool{
     public int run(String[] args) throws Exception {
 
         String input = args[0];
-        String output = args[1];
+       // String output = args[1];
 
-        int pathNum = Integer.parseInt(args[2]);
-
-
-        //IterationNumEnum.MAX_PATH_NUM.setIterationNumEnum(pathNum);
-
-
-      // Job pathJob = getPathJob(input, output);
-
-      // pathJob.waitForCompletion(true);
-
-      //  Job oneCandiantejob = getOneCandiante(args[0], "/user/ttf/candidate", pathNum);
-       // getConf().setInt("Max_NUM", pathNum);
+        int MaxNum = Integer.parseInt(args[1]);
+        int iteraNum = Integer.parseInt(args[2]);
+        int currentItera = 0;
 
 
-       // int num = getConf().getInt("MAX_NUM", 5);
-       // System.out.println("num:" + num);
-    //    oneCandiantejob.waitForCompletion(true);
+
+       Job pathJob = getPathJob(input, "path");
+        pathJob.waitForCompletion(true);
+
+        Job oneCandiantejob = getOneCandidate("path", "mini1", MaxNum);
+
+        oneCandiantejob.waitForCompletion(true);
 
 
-       // Job canidateJob = getCanidate(args[0], args[1],2);
-       // canidateJob.waitForCompletion(true);
+        String candidate_in = "mini1";
+        String candidate_out = null;
+        while(currentItera <  iteraNum - 1 ){
 
-        //Job twoCandidateJob = getTwoCanidate(args[0],args[1], 3);
-        //twoCandidateJob.waitForCompletion(true);
+            int executeItera = currentItera + 2;
+            Job canidateJob = null;
+            Job pathMiniJob = null;
+            candidate_out = "candidate" + executeItera;
+            if(currentItera == 0){
+                System.out.println("twoCandidate............");
 
-        Job pathMiniJob = getPathMiniJob(args[0],args[1],pathNum);
-        pathMiniJob.waitForCompletion(true);
+                canidateJob = getTwoCandidate(candidate_in, candidate_out);
+
+            } else {
+                System.out.println("noTwocandidate.................");
+                canidateJob = getCandidate(candidate_in, candidate_out);
+            }
+            canidateJob.waitForCompletion(true);
+            String pathmini_out = "mini" + executeItera;
+            pathMiniJob = getPathMiniJob("path",candidate_out, pathmini_out,MaxNum, executeItera);
+
+            pathMiniJob.waitForCompletion(true);
+            candidate_in = pathmini_out;
+
+            ++currentItera;
+
+
+        }
+
+
         return 0;
     }
 
 
-    public Job getTwoCanidate(String input , String output, int iteraNum) throws IOException{
+    public Job getTwoCandidate(String input , String output) throws IOException{
 
        // getConf().setInt("ITERA_NUM", iteraNum);
         Job job = new Job(getConf(), "CanidateJob");
@@ -79,9 +96,9 @@ public class ComputePath  extends Configured implements Tool{
         return job;
     }
 
-    public Job getCanidate(String input , String output, int iteraNum) throws IOException{
+    public Job getCandidate(String input , String output) throws IOException{
 
-        getConf().setInt("ITERA_NUM", iteraNum);
+        //getConf().setInt("ITERA_NUM", iteraNum);
         Job job = new Job(getConf(), "CanidateJob");
 
         job.setJarByClass(getClass());
@@ -100,10 +117,10 @@ public class ComputePath  extends Configured implements Tool{
     }
 
 
-    public Job getPathMiniJob(String input , String output, int maxNum) throws IOException{
+    public Job getPathMiniJob(String input,String input2 , String output, int maxNum, int iteraNum) throws IOException{
 
         getConf().setInt("MAX_NUM", maxNum);
-        getConf().setInt("ITEAR_NUM", 2);
+        getConf().setInt("ITEAR_NUM", iteraNum);
         Job job = new Job(getConf(), "PathMiniJob");
 
 
@@ -117,7 +134,7 @@ public class ComputePath  extends Configured implements Tool{
         // job.setOutputValueClass(Text.class);
 
         FileInputFormat.addInputPath(job, new Path(input));
-        FileInputFormat.addInputPath(job, new Path("/user/ttf/twocandidate"));
+        FileInputFormat.addInputPath(job, new Path(input2));
         FileOutputFormat.setOutputPath(job, new Path(output));
 
 
@@ -126,7 +143,7 @@ public class ComputePath  extends Configured implements Tool{
 
 
     }
-    public Job getOneCandiante(String input, String output, int maxNum)throws IOException{
+    public Job getOneCandidate(String input, String output, int maxNum)throws IOException{
 
         getConf().setInt("MAX_NUM", maxNum);
         Job job = new Job(getConf(), "One Candiante");

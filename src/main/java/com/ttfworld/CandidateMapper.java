@@ -16,9 +16,12 @@ public class CandidateMapper extends Mapper<Object, Text, Text, Text>{
        // context.write(new Text(str[0]), new Text("0"));
         Path path = new Path(str[0]);
         String head = path.getHead();
-        context.write(new Text(head), value);
-        String tail = path.getTail();
-        context.write(new Text(tail), value);
+        context.write(new Text(head), new Text(str[0]));
+
+        if(!path.getTail().equals(path.getHead())) {
+            String tail = path.getTail();
+            context.write(new Text(tail), new Text(str[0]));
+        }
     }
 
 }
