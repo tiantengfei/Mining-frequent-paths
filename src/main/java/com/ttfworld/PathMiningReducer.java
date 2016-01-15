@@ -21,11 +21,12 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
         List<String> candidates = new ArrayList<>();
         List<String> paths = new ArrayList<>();
         int max_num = context.getConfiguration().getInt("MAX_NUM",6);
+        int iterNum = context.getConfiguration().getInt("ITEAR_NUM",6);
 
         for(Text text : values){
             if(iscandidate(text)){
                 String str = text.toString();
-                candidates.add(str.substring(0,str.length() - 2));
+                candidates.add(str.substring(0,str.length() - 2));//去掉　１
                 continue;
             }
 
@@ -34,20 +35,28 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
         }
 
         for(String can : candidates){
-            int sum = 0;
+            int sumall=0;
 
             for(String path : paths){
-                if(path.contains(can)) sum++;
+
+                Path p = new Path(path);
+                int sum = p.getCandidateNums(iterNum, can);
+                sumall+=sum;
+
+                //if(sum > max_num)
+                //context.write(new Text(can + " 1"), new IntWritable(sum));
+
+            }
+            if(sumall > max_num) {
+                context.write(new Text(can + " 1"), new IntWritable(sumall));
             }
 
-            if(sum > max_num)
-                context.write(new Text(can + " 1"), new IntWritable(sum));
         }
     }
 
     public boolean iscandidate(Text text){
 
-       int a = flag(text.toString());
+       int a = flag(text.toString());//最后一个数是１
         if(a == 0) return false;
         return true;
 

@@ -123,7 +123,6 @@ public class ComputePath  extends Configured implements Tool{
         getConf().setInt("ITEAR_NUM", iteraNum);
         Job job = new Job(getConf(), "PathMiniJob");
 
-
         job.setJarByClass(getClass());
         job.setMapperClass(PathMiningMapper.class);
         job.setReducerClass(PathMiningReducer.class);

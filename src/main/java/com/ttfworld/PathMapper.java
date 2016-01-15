@@ -73,10 +73,11 @@ public class PathMapper extends Mapper<Object, Text, Text, Text>{
                         + requestStr[1];
             }
             // value：时间～referer～request
-           // valueOut.set(logArray[4] + "~" + referer + "~" + request);
-            System.out.println((logArray[4] + "~" + request));
+           valueOut.set(logArray[4] + "~" + referer + "~" + request);
+            //System.out.println((logArray[4] + "~" + request));
            // context.write(keyOut, new Text(logArray[4] + "~" + request));
-            context.write(new Text(logArray[38] + "-----hello"), new Text(logArray[4] + "~" + request));
+            //context.write(new Text(logArray[38] + "-----hello"), new Text(logArray[4] + "~" + request));
+            context.write(keyOut, valueOut);
         }
 
     }// map

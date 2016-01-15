@@ -3,6 +3,7 @@ package com.ttfworld;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import sun.security.util.PathList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class CandiadateReducer extends Reducer<Text, Text, Text, NullWritable> {
             for(Path p1 : head){
 
                Path pa = new Path(p.toString());
-                pa.add(p1.getPathList().get(1));
+                pa.add(p1.getPathList().get(p1.size()-1));
                 context.write(new Text(pa.toString()), NullWritable.get());
             }
         }

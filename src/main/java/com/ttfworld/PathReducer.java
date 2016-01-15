@@ -30,23 +30,32 @@ public class PathReducer extends Reducer<Text, Text, Text, NullWritable>{
         Arrays.sort(sortedEdgeList);
 //session 时间
         //startTime = ((String) sortedEdgeList[0]).split("~")[0];
-       // endTime = ((String) sortedEdgeList[sortedEdgeList.length - 1])
+        //endTime = ((String) sortedEdgeList[sortedEdgeList.length - 1])
        //         .split("~")[0];
 
         String path="";
+        String first=(String)sortedEdgeList[0];
+        String[] fir=first.split("~");
+        if (fir[1].equals("-")){
+            path=fir[2];
+        }
+        else{
+            path=fir[1]+"~"+fir[2];
+        }
        // path存放的是t1~a~b~t2~b~c~
-        for (int i = 0; i < sortedEdgeList.length; i++) {
+        for (int i = 1; i < sortedEdgeList.length; i++) {
 
             String str = (String)sortedEdgeList[i];
             String[] s = str.split("~");
 
-            path  += s[1] +"~";
+            //path  += s[1] +"~";
+            path  += "~"+s[2];
 
         }
 //
-      path = path.substring(0, path.length() - 1);
+      //path = path.substring(0, path.length() - 1);
         //key: sesison~ip~country~device~browser~startTime~endTime
-        //value: time~url~url
+        //value: url~url
         System.out.println(path.toString());
         context.write(new Text(path), NullWritable.get());
 
