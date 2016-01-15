@@ -7,6 +7,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.Counter;
+import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -19,8 +21,15 @@ import java.io.IOException;
 /**
  * Created by ttf on 15-11-29.
  */
+
+enum MyCounter{
+    PATH_NUM
+}
 public class ComputePath  extends Configured implements Tool{
 
+
+    private long pathNum;
+    private long caidinateNum;
 
 
     public int run(String[] args) throws Exception {
@@ -34,9 +43,20 @@ public class ComputePath  extends Configured implements Tool{
 
 
 
-       Job pathJob = getPathJob(input, "path");
-        pathJob.waitForCompletion(true);
+       Job pathJob = getPathJob(input, "newPathCount/path");
 
+        pathJob.waitForCompletion(true);
+       Counters pathJobCounters = pathJob.getCounters();
+        //pathNum = pathJobCoun ters.findCounter("PATH_NUM", "num of path").getValue();
+        Counter pathCounter =
+                pathJobCounters.findCounter(MyCounter.PATH_NUM);
+        pathNum = pathCounter.getValue();
+
+        //pathNum = getConf().getLong("PATH_NUM", 0);
+        System.out.println("path num is " + pathNum);
+
+
+        /**
         Job oneCandiantejob = getOneCandidate("path", "mini1", MaxNum);
 
         oneCandiantejob.waitForCompletion(true);
@@ -71,7 +91,7 @@ public class ComputePath  extends Configured implements Tool{
 
         }
 
-
+**/
         return 0;
     }
 
@@ -166,6 +186,7 @@ public class ComputePath  extends Configured implements Tool{
     public Job getPathJob(String input, String output) throws IOException{
 
         Job job = new Job(getConf(), "Path Job");
+        getConf().setLong("PATH_NUM", 0);
 
         job.setJarByClass(getClass());
         job.setMapperClass(PathMapper.class);
