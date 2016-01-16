@@ -8,6 +8,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ttf on 15-11-29.
@@ -26,46 +28,47 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
         for(Text text : values){
             if(iscandidate(text)){
                 String str = text.toString();
-                candidates.add(str.substring(0,str.length() - 2));//去掉　１
+                candidates.add(str.split("\t")[0]);
                 continue;
             }
 
-            paths.add(text.toString());
+            paths.add(text.toString().split("\t")[0]);
 
         }
 
         for(String can : candidates){
-            int sumall=0;
-
+            int sum=0;
+            Pattern p = Pattern.compile(can);
             for(String path : paths){
 
-                Path p = new Path(path);
-                int sum = p.getCandidateNums(iterNum, can);
-                sumall+=sum;
 
-                //if(sum > max_num)
-                //context.write(new Text(can + " 1"), new IntWritable(sum));
+                Matcher m = p.matcher(path);
+                while(m.find()){
+
+                    sum += 1;
+                }
+
+
 
             }
-            if(sumall > max_num) {
-                context.write(new Text(can + " 1"), new IntWritable(sumall));
-            }
+
+
+            context.write(new Text(can), new IntWritable(sum));
+
 
         }
     }
 
     public boolean iscandidate(Text text){
 
-       int a = flag(text.toString());//最后一个数是１
-        if(a == 0) return false;
-        return true;
+       String s = text.toString();
+
+        if(s.endsWith("_c"))
+            return true;
+
+
+        return false;
 
     }
 
-    public int flag(String path){
-        int a = path.charAt(path.length() - 1) - 48;
-
-        return a;
-
-    }
 }

@@ -2,6 +2,7 @@ package com.ttfworld;
 
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
 import sun.security.util.PathList;
 
@@ -12,27 +13,32 @@ import java.util.List;
 /**
  * Created by ttf on 15-11-29.
  */
-public class CandiadateReducer extends Reducer<Text, Text, Text, NullWritable> {
+public class CandiadateReducer extends Reducer<Text, Text, Text, Text> {
 
 
     @Override
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
         String  k = key.toString();
-        List<Path> paths = new ArrayList<>();
+
+        List<String> paths = new ArrayList<>();
 
 
         for(Text text : values){
-            paths.add(new Path(text.toString()));
+            paths.add(text.toString());
         }
-        List<Path> head = new ArrayList<>();
-        List<Path> tail = new ArrayList<>();
-        for(Path p : paths){
-            if(p.getHead().equals(k))
-                head.add(new Path(p.toString()));
-            if(p.getTail().equals(k))
-                tail.add(new Path(p.toString()));
+
+        List<String> head = new ArrayList<>();
+        List<String> tail = new ArrayList<>();
+
+        for(String p : paths){
+
+            if(CandidateHelper.getInsance().getHead(p).equals(k))
+                head.add(p);
+            if(CandidateHelper.getInsance().getTail(p).equals(k))
+                tail.add(p);
         }
+
 
 //        for(int i = 0; i < tail.size(); i++){
 //
@@ -46,18 +52,21 @@ public class CandiadateReducer extends Reducer<Text, Text, Text, NullWritable> {
 //            }
 //
 //        }
-        for(Path p : tail){
 
-            for(Path p1 : head){
+        for(String p : tail){
 
-               Path pa = new Path(p.toString());
-                pa.add(p1.getPathList().get(p1.size()-1));
-                context.write(new Text(pa.toString()), NullWritable.get());
+            for(String p1 : head){
+
+                String newCan = CandidateHelper.getInsance().getNewCandinate(p , p1);
+                Counter counter = context.getCounter("CANDINATE_NUM", "candinateNum");
+                counter.increment(1L);
+
+                context.write(new Text(newCan), new Text(counter.getValue() + "_c"));
+
             }
         }
 
        // context.write(key, NullWritable.get());
-
-
     }
+
 }

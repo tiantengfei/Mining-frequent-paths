@@ -30,15 +30,36 @@ public class ComputePath  extends Configured implements Tool{
 
     private long pathNum;
     private long caidinateNum;
+    //path所要被分的块数
+    private long pathBlocks;
+    //每块中path的数目
+   private long pathPerBlocks;
+
+    //candidate所要被分成的块数
+    private long candidateBlocks;
+    //每块中candidate的数目
+    private long candidatePerBlocks;
+
 
 
     public int run(String[] args) throws Exception {
 
         String input = args[0];
+        String baseFile = "newPathCount/";
        // String output = args[1];
 
+
+        //路径的频繁度
         int MaxNum = Integer.parseInt(args[1]);
+
+        //查找的频繁路径长度
         int iteraNum = Integer.parseInt(args[2]);
+
+        //每块中path的数目
+        pathPerBlocks = Integer.parseInt(args[3]);
+
+        //每块中candidate数目
+        candidatePerBlocks = Integer.parseInt(args[4]);
         int currentItera = 0;
 
 
@@ -51,25 +72,45 @@ public class ComputePath  extends Configured implements Tool{
         Counter pathCounter =
                 pathJobCounters.findCounter(MyCounter.PATH_NUM);
         pathNum = pathCounter.getValue();
+        pathBlocks = pathNum / pathPerBlocks + 1;
 
         //pathNum = getConf().getLong("PATH_NUM", 0);
         System.out.println("path num is " + pathNum);
 
 
-        /**
-        Job oneCandiantejob = getOneCandidate("path", "mini1", MaxNum);
+        Job oneCandiantejob = getOneCandidate(baseFile + "path", baseFile + "mini1", MaxNum);
 
         oneCandiantejob.waitForCompletion(true);
 
+        Counters oneCandinateJobCounter =  oneCandiantejob.getCounters();
+        caidinateNum = oneCandinateJobCounter.findCounter("CANDINATE_NUM", "candinateNum").getValue();
+        System.out.println(" The candinateNum is " + caidinateNum);
 
-        String candidate_in = "mini1";
+        String candidate_in = baseFile + "mini1";
         String candidate_out = null;
+
+        candidate_out = baseFile + "candidate" + 2;
+        Job canidateJob = getTwoCandidate(candidate_in, candidate_out);
+        canidateJob.waitForCompletion(true);
+
+        caidinateNum = canidateJob.getCounters().findCounter("CANDINATE_NUM", "candinateNum")
+                .getValue();
+
+        System.out.println("candinateNum:"  + caidinateNum);
+        candidateBlocks = caidinateNum / candidatePerBlocks + 1;
+        String pathmini_out = baseFile + "mini" + 2;
+
+       Job pathMiniJob = getPathMiniJob(baseFile + "path",candidate_out, pathmini_out, MaxNum, 2);
+
+        pathMiniJob.waitForCompletion(true);
+        /*
         while(currentItera <  iteraNum - 1 ){
 
             int executeItera = currentItera + 2;
             Job canidateJob = null;
+            Job getMiniJob = null;
             Job pathMiniJob = null;
-            candidate_out = "candidate" + executeItera;
+            candidate_out = baseFile + "candidate" + executeItera;
             if(currentItera == 0){
                 System.out.println("twoCandidate............");
 
@@ -80,18 +121,28 @@ public class ComputePath  extends Configured implements Tool{
                 canidateJob = getCandidate(candidate_in, candidate_out);
             }
             canidateJob.waitForCompletion(true);
-            String pathmini_out = "mini" + executeItera;
-            pathMiniJob = getPathMiniJob("path",candidate_out, pathmini_out,MaxNum, executeItera);
+
+            caidinateNum = canidateJob.getCounters().findCounter("CANDINATE_NUM", "candinateNum")
+                    .getValue();
+
+            candidateBlocks = caidinateNum / candidatePerBlocks + 1;
+            String pathmini_out = baseFile + "mini" + executeItera;
+            pathMiniJob = getPathMiniJob(baseFile + "path",candidate_out, pathmini_out,MaxNum, executeItera);
 
             pathMiniJob.waitForCompletion(true);
-            candidate_in = pathmini_out;
+
+            String getMiniout = baseFile + "finamini" + executeItera;
+
+            getMiniJob = getFinalMini(pathmini_out, getMiniout, MaxNum);
+            getMiniJob.waitForCompletion(true);
+            candidate_in = getMiniout;
 
             ++currentItera;
 
 
         }
+        */
 
-**/
         return 0;
     }
 
@@ -141,6 +192,11 @@ public class ComputePath  extends Configured implements Tool{
 
         getConf().setInt("MAX_NUM", maxNum);
         getConf().setInt("ITEAR_NUM", iteraNum);
+        getConf().setLong("PATH_PER_BLOCKS", pathPerBlocks);
+        getConf().setLong("CANDINATE_PER_BLOCKS", candidatePerBlocks);
+
+        getConf().setLong("PATH_BLOCKS", pathBlocks);
+        getConf().setLong("CANDINATE_BLOCKS", candidateBlocks);
         Job job = new Job(getConf(), "PathMiniJob");
 
         job.setJarByClass(getClass());
@@ -162,6 +218,29 @@ public class ComputePath  extends Configured implements Tool{
 
 
     }
+
+    public Job getFinalMini(String input, String output, int maxNum)throws IOException{
+
+        getConf().setInt("MAX_NUM", maxNum);
+        Job job = new Job(getConf(), "final Mini");
+
+        job.setJarByClass(getClass());
+        job.setMapperClass(GetMiniMapReduce.GetMiniMapper.class);
+        job.setReducerClass(GetMiniMapReduce.GetMiniReducer.class);
+
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(IntWritable.class);
+        // job.setOutputKeyClass(Text.class);
+        // job.setOutputValueClass(Text.class);
+
+        FileInputFormat.addInputPath(job, new Path(input));
+        FileOutputFormat.setOutputPath(job, new Path(output));
+
+
+        return job;
+
+    }
+
     public Job getOneCandidate(String input, String output, int maxNum)throws IOException{
 
         getConf().setInt("MAX_NUM", maxNum);

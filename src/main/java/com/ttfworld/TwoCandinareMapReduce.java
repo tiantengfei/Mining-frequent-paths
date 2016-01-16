@@ -3,6 +3,7 @@ package com.ttfworld;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -26,7 +27,7 @@ public class TwoCandinareMapReduce {
         }
     }
 
-    public static class TwoCandinateReducer extends Reducer<Text, Text, Text, NullWritable> {
+    public static class TwoCandinateReducer extends Reducer<Text, Text, Text, Text> {
 
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -35,16 +36,19 @@ public class TwoCandinareMapReduce {
 
             for(Text text : values){
 
-                ls.add(text.toString());
+                ls.add(text.toString().split("\t")[0]);
             }
 
             for(int i = 0; i < ls.size(); i++){
 
                 String str = ls.get(i);
                 for(int j = 0; j < ls.size(); j ++){
+
+                    Counter couter = context.getCounter("CANDINATE_NUM", "candinateNum");
+                    couter.increment(1);
                     context.write(
-                            new Text(str.substring(0, str.length() - 2) + "~" + ls.get(j)),
-                            NullWritable.get());
+                            new Text(str + "~" + "*" + "~" +  ls.get(j)),
+                            new Text(""+ couter.getValue()  + "_c"));
                 }
             }
 

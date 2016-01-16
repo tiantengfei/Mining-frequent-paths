@@ -18,10 +18,11 @@ public class OneCandinareMapReduce  {
         @Override
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 
-            String[] str = value.toString().split("~");
+            String[] siteArray = value.toString().split("~");
 
-            for(String s : str)
-                context.write(new Text(s), new IntWritable(1));
+
+            for(int i = 0; i < siteArray.length -1; i++)
+                context.write(new Text(siteArray[i]), new IntWritable(1));
 
         }
     }
@@ -36,8 +37,11 @@ public class OneCandinareMapReduce  {
             for(IntWritable value : values)
                 sum += 1;
 
-            if(sum > maxNum)
-                context.write(new Text(key.toString() + " " + 1), new IntWritable(sum));
+
+            if(sum > maxNum) {
+                context.write(new Text(key.toString()), new IntWritable(sum));
+                context.getCounter("CANDINATE_NUM", "candinateNum").increment(1);
+            }
         }
     }
 }
