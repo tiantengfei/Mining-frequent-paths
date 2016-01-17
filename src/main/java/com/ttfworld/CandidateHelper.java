@@ -32,22 +32,20 @@ public class CandidateHelper {
 
     public   String getTail(String candidate){
 
-        String s1 = candidate.substring(candidate.indexOf("~")+ 1);
-        String s2 = s1.substring(s1.indexOf("~") + 1);
+        String s1 = candidate.substring(candidate.indexOf("*")+ 1);
 
-        return s2;
+        return s1;
     }
 
     public String subtractHeadFromCandidate(String candidate){
-        String s1 = candidate.substring(0, candidate.lastIndexOf("~"));
-        String s2 = s1.substring(s1.lastIndexOf("~"));
+        String s1 = candidate.substring(candidate.lastIndexOf("*") + 1);
 
-        return s2;
+        return s1;
     }
 
     public  String getNewCandinate(String c1 , String c2){
 
-        return getHead(c1) + subtractHeadFromCandidate(c2);
+        return c1 +"~(.~)*" +subtractHeadFromCandidate(c2);
 
     }
 }

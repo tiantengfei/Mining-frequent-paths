@@ -13,15 +13,15 @@ public class PathMiningMapper extends Mapper<Object,Text, Text, Text> {
 
         Configuration conf = context.getConfiguration();
 
-        //获取candinate的块数
+        //获取candinate的块数CANDINATE_BLOCKS
         long candinateBlocks = conf.getLong("CANDINATE_BLOCKS", 100L);
 
         //获取path的块数
         long pathBlocks = conf.getLong("PATH_BLOCKS", 100);
 
-        //获取每块的path以及candidate数目
-        long candinatePerBlocks = conf.getLong("PATH_PER_BLOCKS", 50);
-        long pathPerBlocks = conf.getLong("CANDINATE_PER_BLOCKS", 50);
+        //获取每块的path以及candidate数目   PATH_PER_BLOCKS
+        long candinatePerBlocks = conf.getLong("CANDINATE_PER_BLOCKS", 50);
+        long pathPerBlocks = conf.getLong("PATH_PER_BLOCKS", 50);
 
         //以candinate块的序号以及path块的序号作为key
         //若是path则需要传递到所有的candiandate块
@@ -33,7 +33,7 @@ public class PathMiningMapper extends Mapper<Object,Text, Text, Text> {
             long blockNum = canidateNum / candinatePerBlocks;
 
             for(long i = 0; i < pathBlocks; i ++)
-                context.write(new Text("" + blockNum + "_" + pathBlocks),
+                context.write(new Text("" + blockNum + "_" + i),
                         new Text(str));
 
         }else {
@@ -41,8 +41,9 @@ public class PathMiningMapper extends Mapper<Object,Text, Text, Text> {
             long pathNum = getNum(str, true);
             long blockNum = pathNum / pathPerBlocks;
 
+            context.getCounter("path_num", "path of num").increment(1);
             for(long i = 0; i < candinateBlocks; i ++)
-                context.write(new Text("" + candinateBlocks + "_" + blockNum),
+                context.write(new Text("" + i + "_" + blockNum),
                         new Text(str));
         }
 

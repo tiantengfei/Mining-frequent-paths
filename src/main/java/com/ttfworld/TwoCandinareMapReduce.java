@@ -47,7 +47,7 @@ public class TwoCandinareMapReduce {
                     Counter couter = context.getCounter("CANDINATE_NUM", "candinateNum");
                     couter.increment(1);
                     context.write(
-                            new Text(str + "~" + "*" + "~" +  ls.get(j)),
+                            new Text(str + "~(.~)*" + ls.get(j)),
                             new Text(""+ couter.getValue()  + "_c"));
                 }
             }

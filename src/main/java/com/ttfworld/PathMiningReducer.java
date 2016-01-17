@@ -20,6 +20,7 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
 
+
         List<String> candidates = new ArrayList<>();
         List<String> paths = new ArrayList<>();
         int max_num = context.getConfiguration().getInt("MAX_NUM",6);
@@ -36,6 +37,14 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
 
         }
 
+        /**
+
+        if(paths.size() > 0 && candidates.size() > 1 ) {
+            context.getCounter("matchNum", "match of num").increment(1);
+            context.write(new Text(key.toString() + "--"), new IntWritable(1));
+        }
+         **/
+
         for(String can : candidates){
             int sum=0;
             Pattern p = Pattern.compile(can);
@@ -43,6 +52,7 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
 
 
                 Matcher m = p.matcher(path);
+
                 while(m.find()){
 
                     sum += 1;
@@ -53,10 +63,23 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
             }
 
 
-            context.write(new Text(can), new IntWritable(sum));
+            if(sum > 0) {
+                context.write(new Text(can), new IntWritable(sum));
+                context.getCounter("matchNum", "match of num").increment(1);
+            }
 
 
         }
+
+
+/**
+        for(Text t : values){
+            if(!iscandidate(t))
+            context.write(new Text(key.toString() + "___" + t.toString()), new IntWritable(1));
+
+        }
+ **/
+
     }
 
     public boolean iscandidate(Text text){
@@ -70,5 +93,6 @@ public  class PathMiningReducer extends Reducer<Text, Text,Text, IntWritable> {
         return false;
 
     }
+
 
 }

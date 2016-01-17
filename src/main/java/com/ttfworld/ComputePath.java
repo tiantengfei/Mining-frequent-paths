@@ -64,21 +64,25 @@ public class ComputePath  extends Configured implements Tool{
 
 
 
-       Job pathJob = getPathJob(input, "newPathCount/path");
+      // Job pathJob = getPathJob(input, "newPathCount/path");
 
-        pathJob.waitForCompletion(true);
+      /**  pathJob.waitForCompletion(true);
        Counters pathJobCounters = pathJob.getCounters();
         //pathNum = pathJobCoun ters.findCounter("PATH_NUM", "num of path").getValue();
         Counter pathCounter =
                 pathJobCounters.findCounter(MyCounter.PATH_NUM);
         pathNum = pathCounter.getValue();
+       **/
+
+
+        pathNum = 80000;
         pathBlocks = pathNum / pathPerBlocks + 1;
 
         //pathNum = getConf().getLong("PATH_NUM", 0);
         System.out.println("path num is " + pathNum);
 
 
-        Job oneCandiantejob = getOneCandidate(baseFile + "path", baseFile + "mini1", MaxNum);
+        Job oneCandiantejob = getOneCandidate(baseFile + "test.txt", baseFile + "mini1", MaxNum);
 
         oneCandiantejob.waitForCompletion(true);
 
@@ -89,6 +93,7 @@ public class ComputePath  extends Configured implements Tool{
         String candidate_in = baseFile + "mini1";
         String candidate_out = null;
 
+        /**
         candidate_out = baseFile + "candidate" + 2;
         Job canidateJob = getTwoCandidate(candidate_in, candidate_out);
         canidateJob.waitForCompletion(true);
@@ -100,18 +105,30 @@ public class ComputePath  extends Configured implements Tool{
         candidateBlocks = caidinateNum / candidatePerBlocks + 1;
         String pathmini_out = baseFile + "mini" + 2;
 
-       Job pathMiniJob = getPathMiniJob(baseFile + "path",candidate_out, pathmini_out, MaxNum, 2);
+       Job pathMiniJob = getPathMiniJob(baseFile + "test.txt",candidate_out, pathmini_out, MaxNum, 2);
 
         pathMiniJob.waitForCompletion(true);
-        /*
-        while(currentItera <  iteraNum - 1 ){
+        long num = pathMiniJob.getCounters().findCounter("path_num", "path of num").getValue();
+        long matchNum =  pathMiniJob.getCounters().findCounter("matchNum", "match of num").getValue();
+        System.out.println("pathnumis ....:" + num  + "\n" + "matchNUm...:" + matchNum);
+
+
+        String getMiniout = baseFile + "finamini" + 2;
+        String pathmini_out = baseFile + "mini" + 2;
+        Job getMiniJob = getFinalMini(pathmini_out, getMiniout, MaxNum);
+        getMiniJob.waitForCompletion(true);
+        Job canidateJob = getCandidate(getMiniout, baseFile + "candidate3");
+        canidateJob.waitForCompletion(true);
+         **/
+
+        while(currentItera <  iteraNum - 1 ) {
 
             int executeItera = currentItera + 2;
             Job canidateJob = null;
             Job getMiniJob = null;
             Job pathMiniJob = null;
             candidate_out = baseFile + "candidate" + executeItera;
-            if(currentItera == 0){
+            if (currentItera == 0) {
                 System.out.println("twoCandidate............");
 
                 canidateJob = getTwoCandidate(candidate_in, candidate_out);
@@ -127,7 +144,7 @@ public class ComputePath  extends Configured implements Tool{
 
             candidateBlocks = caidinateNum / candidatePerBlocks + 1;
             String pathmini_out = baseFile + "mini" + executeItera;
-            pathMiniJob = getPathMiniJob(baseFile + "path",candidate_out, pathmini_out,MaxNum, executeItera);
+            pathMiniJob = getPathMiniJob(baseFile + "test.txt", candidate_out, pathmini_out, MaxNum, executeItera);
 
             pathMiniJob.waitForCompletion(true);
 
@@ -141,7 +158,7 @@ public class ComputePath  extends Configured implements Tool{
 
 
         }
-        */
+
 
         return 0;
     }

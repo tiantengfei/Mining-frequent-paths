@@ -53,15 +53,18 @@ public class CandiadateReducer extends Reducer<Text, Text, Text, Text> {
 //
 //        }
 
+        CandidateHelper helper = CandidateHelper.getInsance();
         for(String p : tail){
 
             for(String p1 : head){
 
-                String newCan = CandidateHelper.getInsance().getNewCandinate(p , p1);
-                Counter counter = context.getCounter("CANDINATE_NUM", "candinateNum");
-                counter.increment(1L);
+                if(helper.getTail(p).equals(helper.getHead(p1))) {
+                    String newCan = CandidateHelper.getInsance().getNewCandinate(p, p1);
+                    Counter counter = context.getCounter("CANDINATE_NUM", "candinateNum");
+                    counter.increment(1L);
 
-                context.write(new Text(newCan), new Text(counter.getValue() + "_c"));
+                    context.write(new Text(newCan), new Text(counter.getValue() + "_c"));
+                }
 
             }
         }
