@@ -8,6 +8,10 @@ import java.io.IOException;
 /**
  * Created by ttf on 15-11-29.
  */
+
+/**
+ * 从频繁路径中得到候选
+ */
 public class CandidateMapper extends Mapper<Object, Text, Text, Text>{
 
     @Override

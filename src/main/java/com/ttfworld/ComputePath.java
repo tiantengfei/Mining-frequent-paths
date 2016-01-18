@@ -44,9 +44,11 @@ public class ComputePath  extends Configured implements Tool{
 
     public int run(String[] args) throws Exception {
 
+        //日志文件所在的位置
         String input = args[0];
+
+        //得出的结果应该存储的根文件的位置
         String baseFile = "newPathCount/";
-       // String output = args[1];
 
 
         //路径的频繁度
@@ -62,13 +64,12 @@ public class ComputePath  extends Configured implements Tool{
         candidatePerBlocks = Integer.parseInt(args[4]);
         int currentItera = 0;
 
+    /**   //pathJob用于从日志文件中得到Path，为了测试方便。不再每次计算Path
 
-
-      // Job pathJob = getPathJob(input, "newPathCount/path");
-
-      /**  pathJob.waitForCompletion(true);
+        Job pathJob = getPathJob(input, "newPathCount/path");
+       pathJob.waitForCompletion(true);
        Counters pathJobCounters = pathJob.getCounters();
-        //pathNum = pathJobCoun ters.findCounter("PATH_NUM", "num of path").getValue();
+        pathNum = pathJobCounters.findCounter("PATH_NUM", "num of path").getValue();
         Counter pathCounter =
                 pathJobCounters.findCounter(MyCounter.PATH_NUM);
         pathNum = pathCounter.getValue();
@@ -82,7 +83,7 @@ public class ComputePath  extends Configured implements Tool{
         System.out.println("path num is " + pathNum);
 
 
-        Job oneCandiantejob = getOneCandidate(baseFile + "test.txt", baseFile + "mini1", MaxNum);
+        Job oneCandiantejob = getmini1(baseFile + "test.txt", baseFile + "mini1", MaxNum);
 
         oneCandiantejob.waitForCompletion(true);
 
@@ -93,33 +94,6 @@ public class ComputePath  extends Configured implements Tool{
         String candidate_in = baseFile + "mini1";
         String candidate_out = null;
 
-        /**
-        candidate_out = baseFile + "candidate" + 2;
-        Job canidateJob = getTwoCandidate(candidate_in, candidate_out);
-        canidateJob.waitForCompletion(true);
-
-        caidinateNum = canidateJob.getCounters().findCounter("CANDINATE_NUM", "candinateNum")
-                .getValue();
-
-        System.out.println("candinateNum:"  + caidinateNum);
-        candidateBlocks = caidinateNum / candidatePerBlocks + 1;
-        String pathmini_out = baseFile + "mini" + 2;
-
-       Job pathMiniJob = getPathMiniJob(baseFile + "test.txt",candidate_out, pathmini_out, MaxNum, 2);
-
-        pathMiniJob.waitForCompletion(true);
-        long num = pathMiniJob.getCounters().findCounter("path_num", "path of num").getValue();
-        long matchNum =  pathMiniJob.getCounters().findCounter("matchNum", "match of num").getValue();
-        System.out.println("pathnumis ....:" + num  + "\n" + "matchNUm...:" + matchNum);
-
-
-        String getMiniout = baseFile + "finamini" + 2;
-        String pathmini_out = baseFile + "mini" + 2;
-        Job getMiniJob = getFinalMini(pathmini_out, getMiniout, MaxNum);
-        getMiniJob.waitForCompletion(true);
-        Job canidateJob = getCandidate(getMiniout, baseFile + "candidate3");
-        canidateJob.waitForCompletion(true);
-         **/
 
         while(currentItera <  iteraNum - 1 ) {
 
@@ -150,9 +124,11 @@ public class ComputePath  extends Configured implements Tool{
 
             String getMiniout = baseFile + "finamini" + executeItera;
 
+
             getMiniJob = getFinalMini(pathmini_out, getMiniout, MaxNum);
             getMiniJob.waitForCompletion(true);
             candidate_in = getMiniout;
+
 
             ++currentItera;
 
@@ -163,7 +139,13 @@ public class ComputePath  extends Configured implements Tool{
         return 0;
     }
 
-
+    /**
+     * 得到2候选
+     * @param input  输入路径
+     * @param output 输出路径
+     * @return
+     * @throws IOException
+     */
     public Job getTwoCandidate(String input , String output) throws IOException{
 
        // getConf().setInt("ITERA_NUM", iteraNum);
@@ -184,6 +166,13 @@ public class ComputePath  extends Configured implements Tool{
         return job;
     }
 
+    /**
+     * 得到候选
+     * @param input 前一次finaminiJob的输出
+     * @param output 候选文件
+     * @return
+     * @throws IOException
+     */
     public Job getCandidate(String input , String output) throws IOException{
 
         //getConf().setInt("ITERA_NUM", iteraNum);
@@ -204,7 +193,16 @@ public class ComputePath  extends Configured implements Tool{
         return job;
     }
 
-
+    /**
+     *找出每一块数据中路径的频发度
+     * @param input  生成的Path文件
+     * @param input2 候选文件
+     * @param output
+     * @param maxNum    频繁度
+     * @param iteraNum  所要查找的频繁路径的长度
+     * @return
+     * @throws IOException
+     */
     public Job getPathMiniJob(String input,String input2 , String output, int maxNum, int iteraNum) throws IOException{
 
         getConf().setInt("MAX_NUM", maxNum);
@@ -215,6 +213,7 @@ public class ComputePath  extends Configured implements Tool{
         getConf().setLong("PATH_BLOCKS", pathBlocks);
         getConf().setLong("CANDINATE_BLOCKS", candidateBlocks);
         Job job = new Job(getConf(), "PathMiniJob");
+       // job.setNumReduceTasks(2);
 
         job.setJarByClass(getClass());
         job.setMapperClass(PathMiningMapper.class);
@@ -236,6 +235,15 @@ public class ComputePath  extends Configured implements Tool{
 
     }
 
+
+    /**
+     *得到最终的频繁路径
+     * @param input  PathminiJob的输出文件
+     * @param output
+     * @param maxNum
+     * @return
+     * @throws IOException
+     */
     public Job getFinalMini(String input, String output, int maxNum)throws IOException{
 
         getConf().setInt("MAX_NUM", maxNum);
@@ -258,7 +266,15 @@ public class ComputePath  extends Configured implements Tool{
 
     }
 
-    public Job getOneCandidate(String input, String output, int maxNum)throws IOException{
+    /**
+     * 得到长度为一的频繁路径
+     * @param input  path路径
+     * @param output
+     * @param maxNum
+     * @return
+     * @throws IOException
+     */
+    public Job getmini1(String input, String output, int maxNum)throws IOException{
 
         getConf().setInt("MAX_NUM", maxNum);
         Job job = new Job(getConf(), "One Candiante");
@@ -279,6 +295,14 @@ public class ComputePath  extends Configured implements Tool{
         return job;
 
     }
+
+    /**
+     * 从日志得到路径
+     * @param input  日志文件
+     * @param output  path
+     * @return
+     * @throws IOException
+     */
     public Job getPathJob(String input, String output) throws IOException{
 
         Job job = new Job(getConf(), "Path Job");
