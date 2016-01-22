@@ -23,7 +23,7 @@ public class PathMapper extends Mapper<Object, Text, Text, Text>{
         String[] logArray = value.toString().split("\t");
 
         String sessionID = logArray[4];
-        String visitTime = logArray[3];
+        String visitTime = logArray[2];
         String refID = logArray[8];
         String reqID= logArray[9];
 

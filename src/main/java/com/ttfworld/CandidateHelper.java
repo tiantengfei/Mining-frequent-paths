@@ -92,10 +92,30 @@ public class CandidateHelper {
         }
 
 
+
         return sum;
 
     }
 
+    public  boolean isContain(Path path, int pIndex ,Path candidate, int cIndex){
+
+
+        List<String> p = path.getWebsites();
+        List<String> can = candidate.getWebsites();
+
+
+        for(int i = pIndex ; i < p.size(); i++)
+            if(p.get(i).
+                    equals(candidate.getWebsites().get(cIndex))) {
+
+
+                if(cIndex == can.size() - 1) return true;
+
+                return isContain(path, i + 1, candidate, cIndex + 1);
+            }
+
+        return false;
+    }
     /**
      * 判断是否为候选
      * @param text

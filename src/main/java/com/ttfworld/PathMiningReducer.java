@@ -28,10 +28,10 @@ public class PathMiningReducer extends Reducer<Text, Text, Text, IntWritable> {
         for (Text text : values) {
             if (candidateHelper.iscandidate(text)) {
                 String str = text.toString();
-                candidates.add(str.split("\t")[0]);
+                candidates.add(str);
 
             } else
-                paths.add(text.toString().split("\t")[0]);
+                paths.add(text.toString());
 
         }
 
@@ -41,16 +41,14 @@ public class PathMiningReducer extends Reducer<Text, Text, Text, IntWritable> {
         if (candidates.size() > 0 && paths.size() > 0) {
 
             for (String can : candidates) {
-                int sum = 0;
                 for (String path : paths) {
-                  sum =   candidateHelper.findFrequency(new Path(path), 0,
-                            new Path(can), 0);
-                }
 
-                if (sum > 0) {
-                    context.write(new Text(can), new IntWritable(sum));
+                    if(candidateHelper.isContain(new Path(path),
+                            0, new Path(can), 0))
+                        context.write(new Text(can), new IntWritable(1));
                     context.getCounter("matchNum", "match of num").increment(1);
                 }
+
             }
 
         }

@@ -1,5 +1,6 @@
 package com.ttfworld;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -29,18 +30,27 @@ public class PathReducer extends Reducer<Text, Text, Text, LongWritable>{
         // 获得session的发生时间
         String time = ((String) sortedEdge[0]).split("~")[0];
 
-        // 路径拆分
-        List<ArrayList<String>> pathList = new ArrayList<ArrayList<String>>();
 
-        for (Object str : sortedEdge) {
-            String start = "";
-            String end = "";
-            // if (((String) str).split("~").length == 3) {
-            start = ((String) str).split("~")[1];
-            end = ((String) str).split("~")[2];
-            // } else {
-            // continue; // 过滤错误数据
-            // }
+        Configuration conf =  context.getConfiguration();
+
+        String startTime = conf.get("start_time");
+        String endTime = conf.get("end_time");
+
+        if(time.compareTo(startTime) > 0 &&
+                time.compareTo(endTime) < 0) {
+
+            // 路径拆分
+            List<ArrayList<String>> pathList = new ArrayList<ArrayList<String>>();
+
+            for (Object str : sortedEdge) {
+                String start = "";
+                String end = "";
+                // if (((String) str).split("~").length == 3) {
+                start = ((String) str).split("~")[1];
+                end = ((String) str).split("~")[2];
+                // } else {
+                // continue; // 过滤错误数据
+                // }
 
 
                 if (pathList.size() == 0) { // 首条拆分路径
@@ -94,27 +104,28 @@ public class PathReducer extends Reducer<Text, Text, Text, LongWritable>{
 
                 }
 
-        }// for
+            }// for
 
 
-        for(List<String> p : pathList){
+            for (List<String> p : pathList) {
 
-            String str = "";
+                String str ="";
 
-            for(String s : p){
-                str += s + "~";
+                for (String s : p) {
+                    str += s + "~";
+
+                }
+
+                context.getCounter(MyCounter.PATH_NUM).increment(1);
+
+                Counter pathCounter =
+                        context.getCounter(MyCounter.PATH_NUM);
+                // long pathNum = context.getConfiguration().getLong("PATH_NUM", 0);
+                long pathNum = pathCounter.getValue();
+                context.write(new Text(str.substring(0, str.length() - 1)),
+                        new LongWritable(pathNum));
 
             }
-
-             context.getCounter(MyCounter.PATH_NUM).increment(1);
-
-            Counter pathCounter =
-                   context.getCounter(MyCounter.PATH_NUM);
-           // long pathNum = context.getConfiguration().getLong("PATH_NUM", 0);
-            long pathNum = pathCounter.getValue();
-            context.write(new Text(str.substring(0, str.length() - 1)),
-                    new LongWritable(pathNum));
-
         }
     }// reduce
 }

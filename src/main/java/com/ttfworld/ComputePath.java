@@ -1,12 +1,9 @@
 package com.ttfworld;
 
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
@@ -15,7 +12,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -64,32 +60,40 @@ public class ComputePath  extends Configured implements Tool{
         candidatePerBlocks = Integer.parseInt(args[4]);
         int currentItera = 0;
 
-    /**   //pathJob用于从日志文件中得到Path，为了测试方便。不再每次计算Path
+       //pathJob用于从日志文件中得到Path，为了测试方便。不再每次计算Path
 
-        Job pathJob = getPathJob(input, "newPathCount/path");
+        Job pathJob = getPathJob(input, "newPathCount/newpath");
        pathJob.waitForCompletion(true);
        Counters pathJobCounters = pathJob.getCounters();
         pathNum = pathJobCounters.findCounter("PATH_NUM", "num of path").getValue();
         Counter pathCounter =
                 pathJobCounters.findCounter(MyCounter.PATH_NUM);
         pathNum = pathCounter.getValue();
-       **/
 
 
-        pathNum = 80000;
+        /**
+
+        Job duringPathJob = duringPathJob(baseFile + "newpath", baseFile + "t1");
+        duringPathJob.waitForCompletion(true);
+        pathNum = duringPathJob.getCounters().
+                findCounter("nums_period_time", "nums_time").getValue();
+
+        System.out.println("num _ time :" + pathNum);
+
+**/
         pathBlocks = pathNum / pathPerBlocks + 1;
 
         //pathNum = getConf().getLong("PATH_NUM", 0);
         System.out.println("path num is " + pathNum);
 
 
-        Job oneCandiantejob = getmini1(baseFile + "test.txt", baseFile + "mini1", MaxNum);
+        Job oneMinijob = getmini1( baseFile + "/newpath", baseFile + "mini1", MaxNum);
 
-        oneCandiantejob.waitForCompletion(true);
+        oneMinijob.waitForCompletion(true);
 
-        Counters oneCandinateJobCounter =  oneCandiantejob.getCounters();
-        caidinateNum = oneCandinateJobCounter.findCounter("CANDINATE_NUM", "candinateNum").getValue();
-        System.out.println(" The candinateNum is " + caidinateNum);
+        Counters oneMiniJobCounter =  oneMinijob.getCounters();
+        long mini1Num = oneMiniJobCounter.findCounter("CANDINATE_NUM", "candinateNum").getValue();
+        System.out.println(" The Mini1 is " + mini1Num);
 
         String candidate_in = baseFile + "mini1";
         String candidate_out = null;
@@ -118,7 +122,7 @@ public class ComputePath  extends Configured implements Tool{
 
             candidateBlocks = caidinateNum / candidatePerBlocks + 1;
             String pathmini_out = baseFile + "mini" + executeItera;
-            pathMiniJob = getPathMiniJob(baseFile + "test.txt", candidate_out, pathmini_out, MaxNum, executeItera);
+            pathMiniJob = getPathMiniJob(baseFile + "/newpath", candidate_out, pathmini_out, MaxNum, executeItera);
 
             pathMiniJob.waitForCompletion(true);
 
@@ -134,7 +138,6 @@ public class ComputePath  extends Configured implements Tool{
 
 
         }
-
 
         return 0;
     }
@@ -280,8 +283,8 @@ public class ComputePath  extends Configured implements Tool{
         Job job = new Job(getConf(), "One Candiante");
 
         job.setJarByClass(getClass());
-        job.setMapperClass(OneCandinareMapReduce.OneCandinateMapper.class);
-        job.setReducerClass(OneCandinareMapReduce.OneCandinateReducer.class);
+        job.setMapperClass(OneMiniMapReduce.OneCandinateMapper.class);
+        job.setReducerClass(OneMiniMapReduce.OneCandinateReducer.class);
 
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
@@ -305,8 +308,10 @@ public class ComputePath  extends Configured implements Tool{
      */
     public Job getPathJob(String input, String output) throws IOException{
 
+        getConf().set("start_time", "2015-11-02 14:00:00");
+        getConf().set("end_time", "2015-11-02 16:00:00");
         Job job = new Job(getConf(), "Path Job");
-        getConf().setLong("PATH_NUM", 0);
+       // getConf().setLong("PATH_NUM", 0);
 
         job.setJarByClass(getClass());
         job.setMapperClass(PathMapper.class);
@@ -316,6 +321,35 @@ public class ComputePath  extends Configured implements Tool{
         job.setMapOutputValueClass(Text.class);
        // job.setOutputKeyClass(Text.class);
        // job.setOutputValueClass(Text.class);
+
+        FileInputFormat.addInputPath(job, new Path(input));
+        FileOutputFormat.setOutputPath(job, new Path(output));
+
+
+
+        return job;
+    }
+
+    public Job duringPathJob(String input, String output) throws IOException {
+
+
+        //getConf().setLong("PATH_NUM", 0);
+
+        getConf().setInt("test", 50);
+        getConf().set("start_time", "2015-11-02 16:00:00");
+        getConf().set("end_time", "2015-11-02 21:00:00");
+        Job job = new Job(getConf(), "During Path Job");
+
+
+
+        job.setJarByClass(getClass());
+        job.setMapperClass(DuringPathMapReduce.DuringPathMapper.class);
+        job.setReducerClass(DuringPathMapReduce.DuringPathReducer.class);
+
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(Text.class);
+        // job.setOutputKeyClass(Text.class);
+        // job.setOutputValueClass(Text.class);
 
         FileInputFormat.addInputPath(job, new Path(input));
         FileOutputFormat.setOutputPath(job, new Path(output));

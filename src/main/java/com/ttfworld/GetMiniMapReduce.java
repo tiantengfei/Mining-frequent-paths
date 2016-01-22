@@ -18,9 +18,9 @@ public class GetMiniMapReduce {
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 
             String[] array = value.toString().split("\t");
-            int num = Integer.parseInt(array[1]);
+            //int num = Integer.parseInt(array[1]);
 
-            context.write(new Text(array[0]), new IntWritable(num));
+            context.write(new Text(array[0]), new IntWritable(1));
 
 
         }

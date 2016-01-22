@@ -47,6 +47,15 @@ public class Path {
         return websites;
     }
 
+    public String getPath(){
+
+        String str = "";
+        for(String s : websites)
+
+            str += s+"~";
+
+        return str.substring(0, str.length() - 1);
+    }
     public void setWebsites(List<String> websites) {
         this.websites = websites;
     }
